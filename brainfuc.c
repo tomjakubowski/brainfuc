@@ -10,7 +10,7 @@ typedef struct {
 
 void machine_init(machine_t *state, int array_size) {
     state->array_size = 30000;
-    state->array = calloc(state->array_size, sizeof(char));
+    state->array = calloc(state->array_size, sizeof(*state->array));
     state->ptr = state->array;
 }
 
@@ -56,7 +56,7 @@ void machine_dump(machine_t *state) {
 }
 
 int main(int argc, char **argv) {
-    machine_t *m = malloc(sizeof(machine_t));
+    machine_t *m = malloc(sizeof(*m));
 
     machine_init(m, 30000);
 
