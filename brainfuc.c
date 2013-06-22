@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 typedef struct {
-    char *program;
     char *array;
     size_t array_size;
     char *ptr;
@@ -55,22 +54,58 @@ void machine_dump(machine_t *state) {
     }
 }
 
+void machine_exec(machine_t *m, char *program) {
+    char *inst = program;
+    char c;
+    while ((c = *inst++) != '\0') {
+        switch (c) {
+            case '>':
+                machine_next(m);
+                break;
+            case '<':
+                machine_prev(m);
+                break;
+            case '+':
+                machine_incr(m);
+                break;
+            case '-':
+                machine_decr(m);
+                break;
+            case '.':
+                machine_put(m);
+                break;
+            case ',':
+                machine_get(m);
+                break;
+        }
+    }
+}
+
+char *read_program(char *filename) {
+    int const CHUNK_SIZE = 1024;
+    char *program = malloc(CHUNK_SIZE * sizeof(char));
+
+    FILE *fd = NULL;
+
+    if ((fd = fopen(filename, "r")) == NULL) {
+        printf("Error opening %s for reading.\n", filename);
+        exit(1);
+    }
+
+    if (fgets(program, CHUNK_SIZE, fd) == NULL) {
+        printf("Error reading program from %s\n", filename);
+        fclose(fd);
+        exit(2);
+    }
+    fclose(fd);
+    return program;
+}
+
 int main(int argc, char **argv) {
+    char *program = read_program("test.bf");
     machine_t *m = malloc(sizeof(*m));
-
     machine_init(m, 30000);
-
-    for (int i = 0; i < 6; i++) {
-        machine_get(m);
-        machine_next(m);
-    }
-    for (int i = 0; i < 6; i++) {
-        machine_prev(m);
-    }
-    for (int i = 0; i < 6; i++) {
-        machine_put(m);
-        machine_next(m);
-    }
-
+    machine_exec(m, program);
     machine_free(m);
+    free(program);
 }
