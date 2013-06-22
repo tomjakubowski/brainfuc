@@ -7,10 +7,10 @@ typedef struct {
     char *ptr;
 } machine_t;
 
-void machine_init(machine_t *state, int array_size) {
-    state->array_size = 30000;
-    state->array = calloc(state->array_size, sizeof(*state->array));
-    state->ptr = state->array;
+void machine_init(machine_t *m, int array_size) {
+    m->array_size = 30000;
+    machine_clear(m);
+    m->ptr = m->array;
 }
 
 void machine_next(machine_t *state) {
@@ -52,6 +52,11 @@ void machine_dump(machine_t *state) {
                 *(state->array + i),
                 i % per_row == (per_row - 1) ? "\n" : " ");
     }
+}
+
+void machine_clear(machine_t *m) {
+    free(m->array);
+    m->array = calloc(m->array_size, sizeof(*m->array));
 }
 
 void machine_exec(machine_t *m, char *program) {
