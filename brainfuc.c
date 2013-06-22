@@ -88,7 +88,7 @@ void machine_exec(machine_t *m, char *program) {
 
 char *read_program(char *filename) {
     int const CHUNK_SIZE = 1024;
-    char *program = malloc(CHUNK_SIZE * sizeof(char));
+    char *program = malloc(CHUNK_SIZE * sizeof(*program));
 
     FILE *fd = NULL;
 
