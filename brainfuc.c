@@ -45,15 +45,17 @@ void machine_free(machine_t *state) {
 }
 
 void machine_dump(machine_t *state) {
-    size_t max = state->array_size;
-    int const per_row = 8;
+    size_t max = 16;
+    int const per_row = 16;
 
     printf("\n---- DUMP ----\n");
     for (size_t i = 0; i < max; i++) {
-        printf("%08x%s",
-                *(state->array + i),
+        printf("0x%02x%s", *(state->array + i),
                 i % per_row == (per_row - 1) ? "\n" : " ");
     }
+    printf("pointer at cell %zu with value: 0x%02x\n",
+            (state->ptr - state->array), *state->ptr);
+    printf("---- DUMP ----\n");
 }
 
 void machine_clear(machine_t *m) {
@@ -83,6 +85,9 @@ void machine_exec(machine_t *m, char *program) {
                 break;
             case ',':
                 machine_get(m);
+                break;
+            case '#':
+                machine_dump(m);
                 break;
         }
     }
