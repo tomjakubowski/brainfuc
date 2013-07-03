@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "stack.h"
+
 typedef struct {
     char *array;
     size_t array_size;
@@ -36,7 +38,11 @@ void machine_put(machine_t *state) {
 }
 
 void machine_get(machine_t *state) {
-    *state->ptr = getchar();
+    int c = getchar();
+    // Choose to mimic Müller's Brainfuck behavior on EOF
+    if (c != EOF) {
+        *state->ptr = c;
+    }
 }
 
 void machine_free(machine_t *state) {
@@ -64,9 +70,12 @@ void machine_clear(machine_t *m) {
 }
 
 void machine_exec(machine_t *m, char *program) {
-    char *inst = program;
+    char *instruction = program;
     char c;
-    while ((c = *inst++) != '\0') {
+    stack *jumps = NULL;
+
+    while ((c = *instruction) != '\0') {
+        char *jump = NULL;
         switch (c) {
             case '>':
                 machine_next(m);
@@ -89,6 +98,33 @@ void machine_exec(machine_t *m, char *program) {
             case '#':
                 machine_dump(m);
                 break;
+            case '[':
+                if (*m->ptr == 0) {
+                    /* Advance the instruction pointer past the matching ] */
+                    stack *bracket_match = NULL;
+                    stack_push(&bracket_match, instruction);
+                    char *i = instruction;
+                    while (*i++ != '\0' && !stack_empty(bracket_match)) {
+                        if (*i == '[') {
+                            stack_push(&bracket_match, i);
+                        } else if (*i == ']') {
+                            stack_pop(&bracket_match);
+                        }
+                    }
+                    jump = i;
+                } else {
+                    stack_push(&jumps, instruction);
+                }
+                break;
+            case ']':
+                jump = stack_pop(&jumps);
+                break;
+        }
+
+        if (jump != NULL) {
+            instruction = jump;
+        } else {
+            instruction++;
         }
     }
 }

@@ -1,7 +1,6 @@
 brainfuc
 
 basic brainfuck implementation in C
-jump instructions not implemented
 
 >	increment the data pointer (to point to the next cell to the right).
 <	decrement the data pointer (to point to the next cell to the left).
