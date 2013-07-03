@@ -7,6 +7,8 @@ typedef struct {
     char *ptr;
 } machine_t;
 
+void machine_clear(machine_t *);
+
 void machine_init(machine_t *m, int array_size) {
     m->array_size = 30000;
     machine_clear(m);
