@@ -93,14 +93,14 @@ char *read_program(char *filename) {
     FILE *fd = NULL;
 
     if ((fd = fopen(filename, "r")) == NULL) {
-        printf("Error opening %s for reading.\n", filename);
-        exit(1);
+        fprintf(stderr, "Error opening %s for reading.\n", filename);
+        abort();
     }
 
     if (fgets(program, CHUNK_SIZE, fd) == NULL) {
-        printf("Error reading program from %s\n", filename);
+        fprintf(stderr, "Error reading program from %s\n", filename);
         fclose(fd);
-        exit(2);
+        abort();
     }
     fclose(fd);
     return program;
