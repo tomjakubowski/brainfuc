@@ -7,37 +7,37 @@ typedef struct {
     char *array;
     size_t array_size;
     char *ptr;
-} machine_t;
+} machine;
 
-void machine_clear(machine_t *);
+void machine_clear(machine *);
 
-void machine_init(machine_t *m, int array_size) {
-    m->array_size = 30000;
-    machine_clear(m);
+void machine_init(machine *m, int array_size) {
+    m->array_size = array_size;
+    m->array = calloc(m->array_size, sizeof(*m->array));
     m->ptr = m->array;
 }
 
-void machine_next(machine_t *state) {
+void machine_next(machine *state) {
     state->ptr++;
 }
 
-void machine_prev(machine_t *state) {
+void machine_prev(machine *state) {
     state->ptr--;
 }
 
-void machine_incr(machine_t *state) {
+void machine_incr(machine *state) {
     (*state->ptr)++;
 }
 
-void machine_decr(machine_t *state) {
+void machine_decr(machine *state) {
     (*state->ptr)--;
 }
 
-void machine_put(machine_t *state) {
+void machine_put(machine *state) {
     putchar(*state->ptr);
 }
 
-void machine_get(machine_t *state) {
+void machine_get(machine *state) {
     int c = getchar();
     // Choose to mimic Müller's Brainfuck behavior on EOF
     if (c != EOF) {
@@ -45,12 +45,7 @@ void machine_get(machine_t *state) {
     }
 }
 
-void machine_free(machine_t *state) {
-    free(state->array);
-    free(state);
-}
-
-void machine_dump(machine_t *state) {
+void machine_dump(machine *state) {
     size_t max = 16;
     int const per_row = 16;
 
@@ -64,18 +59,17 @@ void machine_dump(machine_t *state) {
     printf("---- DUMP ----\n");
 }
 
-void machine_clear(machine_t *m) {
+void machine_cleanup(machine *m) {
     free(m->array);
-    m->array = calloc(m->array_size, sizeof(*m->array));
 }
 
-void machine_exec(machine_t *m, char *program) {
+void machine_exec(machine *m, char *program) {
     char *instruction = program;
-    char c;
     stack *jumps = NULL;
 
-    while ((c = *instruction) != '\0') {
+    while (*instruction != '\0') {
         char *jump = NULL;
+        char c = *instruction;
         switch (c) {
             case '>':
                 machine_next(m);
@@ -119,6 +113,8 @@ void machine_exec(machine_t *m, char *program) {
             case ']':
                 jump = stack_pop(&jumps);
                 break;
+            default:
+                break;
         }
 
         if (jump != NULL) {
@@ -129,35 +125,35 @@ void machine_exec(machine_t *m, char *program) {
     }
 }
 
-char *read_program(char *filename) {
+void read_program(char *filename, char **program_out) {
     int const CHUNK_SIZE = 1024;
-    char *program = malloc(CHUNK_SIZE * sizeof(*program));
+    char *program = malloc(CHUNK_SIZE);
+    FILE *fp = NULL;
 
-    FILE *fd = NULL;
-
-    if ((fd = fopen(filename, "r")) == NULL) {
+    if ((fp = fopen(filename, "r")) == NULL) {
         fprintf(stderr, "Error: couldn't %s for reading.\n", filename);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
-    if (fgets(program, CHUNK_SIZE, fd) == NULL) {
+    if (fgets(program, CHUNK_SIZE, fp) == NULL) {
         fprintf(stderr, "Error: couldn't read program from %s\n", filename);
-        fclose(fd);
-        exit(1);
+        fclose(fp);
+        exit(EXIT_FAILURE);
     }
-    fclose(fd);
-    return program;
+    fclose(fp);
+    *program_out = program;
 }
 
 int main(int argc, char **argv) {
-    if (argc < 2) {
+    if (argc != 2) {
         fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
-        exit(1);
+        return EXIT_FAILURE;
     }
-    char *program = read_program(argv[1]);
-    machine_t *m = malloc(sizeof(*m));
-    machine_init(m, 30000);
-    machine_exec(m, program);
-    machine_free(m);
-    free(program);
+    char *program = NULL;
+    read_program(argv[1], &program);
+
+    machine m;
+    machine_init(&m, 30000);
+    machine_exec(&m, program);
+    machine_cleanup(&m);
 }
