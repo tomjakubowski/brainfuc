@@ -9,8 +9,6 @@ typedef struct {
     char *ptr;
 } machine;
 
-void machine_clear(machine *);
-
 void machine_init(machine *m, int array_size) {
     m->array_size = array_size;
     m->array = calloc(m->array_size, sizeof(*m->array));
