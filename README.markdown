@@ -22,9 +22,6 @@ implementation notes
   undefined behavior.
 * when the `,` instruction reads EOF, the byte at the data pointer is
   unchanged
-* only the first 1024 bytes or first line, whichever is shorter, of the
-  program is read. this will be changed to allow for larger programs in
-  the near future.
 * there is an additional non-standard instruction `#` which prints the
   first 16 bytes of memory (from the start of the array), the current
   position of the data pointer, and the value at the data pointer.
