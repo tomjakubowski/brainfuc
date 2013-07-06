@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "stack.h"
 
@@ -124,16 +125,28 @@ void machine_exec(machine *m, char *program) {
 }
 
 void read_program(char *filename, char **program_out) {
-    int const CHUNK_SIZE = 1024;
-    char *program = malloc(CHUNK_SIZE);
     FILE *fp = NULL;
-
     if ((fp = fopen(filename, "r")) == NULL) {
         fprintf(stderr, "Error: couldn't %s for reading.\n", filename);
         exit(EXIT_FAILURE);
     }
 
-    if (fgets(program, CHUNK_SIZE, fp) == NULL) {
+    size_t bytes_read = 0,
+           buffer_size = 1024;
+    char *program = malloc(buffer_size),
+         *buffer = program;
+
+    while (fgets(buffer, buffer_size - bytes_read, fp)) {
+        size_t len = strlen(buffer);
+        bytes_read += len;
+        if (buffer_size - bytes_read == 1) {
+            buffer_size *= 2;
+            program = realloc(program, buffer_size);
+        }
+        buffer = program + bytes_read;
+    }
+
+    if (ferror(fp)) {
         fprintf(stderr, "Error: couldn't read program from %s\n", filename);
         fclose(fp);
         exit(EXIT_FAILURE);
