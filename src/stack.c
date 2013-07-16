@@ -1,5 +1,7 @@
 #include "stack.h"
 
+#include <assert.h>
+
 void stack_push(stack **stack_ptr, stack_element data) {
     stack *head = malloc(sizeof(head));
     head->next = *stack_ptr;

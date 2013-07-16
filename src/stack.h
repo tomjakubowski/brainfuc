@@ -5,7 +5,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-typedef char * stack_element;
+#include "machine.h"
+
+typedef void *stack_element;
 typedef struct stack {
     struct stack *next;
     stack_element data;
